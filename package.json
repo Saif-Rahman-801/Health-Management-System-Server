@@ -12,9 +12,9 @@
     "multer": "^1.4.5-lts.1"
   },
   "type": "module",
-  "name": "rent-your-space-backend",
+  "name": "healthcare-management-system",
   "version": "1.0.0",
-  "description": "It's the backend part of the rent your space web application",
+  "description": "It's the backend part of the Healthcare Management system web application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
