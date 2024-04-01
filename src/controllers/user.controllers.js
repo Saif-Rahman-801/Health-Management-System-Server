@@ -2,7 +2,9 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   // check if the user exists
@@ -27,9 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   // upload on cloudinary
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  console.log(avatar);
 
-//   if (!avatar) throw new ApiError(400, "Error uploading avatar");
 
   //   Create user
   const user = await User.create({
@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     username,
     role,
-    // avatar,
+    avatar: avatar?.url,
   });
 
   const createdUser = await User.findById(user?._id).select(
@@ -45,7 +45,6 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 
   if (!createdUser) throw new ApiError(500, "Error while creating user");
-
   return res
     .status(201)
     .json(new ApiResponse(200, createdUser, "User registration successful"));
