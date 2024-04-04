@@ -17,7 +17,7 @@ export const verifyJwt = asyncHandler(async (req, _, next) => {
     if (!decodedToken) {
       throw new ApiError(401, "Invalid user token");
     }
-    console.log(decodedToken);
+    // console.log(decodedToken);
     /* 
     the decoded token looks like 
     decodedToken = {
