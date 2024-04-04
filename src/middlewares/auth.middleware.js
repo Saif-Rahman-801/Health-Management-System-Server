@@ -14,6 +14,9 @@ export const verifyJwt = asyncHandler(async (req, _, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    if (!decodedToken) {
+      throw new ApiError(401, "Invalid user token");
+    }
     console.log(decodedToken);
     /* 
     the decoded token looks like 
@@ -41,3 +44,17 @@ export const verifyJwt = asyncHandler(async (req, _, next) => {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
 });
+
+export const isUserAvailable = (req, _, next) => {
+  if (!req?.user) {
+    throw new ApiError(401, "Unauthorized; user not available");
+  }
+  next();
+};
+
+export const isAdmin = (req, _, next) => {
+  if (req?.user?.role !== "admin") {
+    throw new ApiError(403, "Unauthorized; Bad request, role doesn't match");
+  }
+  next();
+};
