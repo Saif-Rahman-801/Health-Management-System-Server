@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import { sendNodeMailerMail } from "../utils/sendNodemailerMail.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -213,6 +214,34 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   }
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(401, "User not found; no user with this email");
+  }
+  const resetToken = await user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
+
+  const url = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
+
+  const message = `Click on the link to reset your password.${url}  if you haven't requested to reset your password then ignore the mail`;
+
+  await sendNodeMailerMail(user?.email, "Reset your password", message);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        `Reset password token has been sent to ${user?.email} Mailtrap  account; Please Check your Mailtrap account inbox`
+      )
+    );
+});
+
+const resetPassword = asyncHandler(async (req, res) => {});
+
 export {
   registerUser,
   loginUser,
@@ -220,4 +249,6 @@ export {
   refreshAccessToken,
   changeCurrentPassWord,
   getCurrentUser,
+  forgotPassword,
+  resetPassword,
 };
