@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { sendNodeMailerMail } from "../utils/sendNodemailerMail.js";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -223,7 +224,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = await user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const url = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
+  const url = `${process.env.FRONTEND_URL}/resetPass/${resetToken}`;
 
   const message = `Click on the link to reset your password.${url}  if you haven't requested to reset your password then ignore the mail`;
 
@@ -240,7 +241,32 @@ const forgotPassword = asyncHandler(async (req, res) => {
     );
 });
 
-const resetPassword = asyncHandler(async (req, res) => {});
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordTokenExpiry: {
+      $gt: Date.now(),
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(401, "Invalid token");
+  }
+
+  user.password = req?.body?.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordTokenExpiry = undefined;
+
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json(new ApiResponse(200, {}, "Password reset successful"));
+});
 
 export {
   registerUser,
