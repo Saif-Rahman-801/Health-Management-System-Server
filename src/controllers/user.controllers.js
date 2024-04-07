@@ -226,7 +226,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const url = `${process.env.FRONTEND_URL}/resetPass/${resetToken}`;
 
-  const message = `Click on the link to reset your password.${url}  if you haven't requested to reset your password then ignore the mail`;
+  const message = `Copy the token ${resetToken} and paste it in the confirmation token to reset your password or fetch ${url} with a PUT request. if you haven't requested to reset your password then ignore the mail.`;
 
   await sendNodeMailerMail(user?.email, "Reset your password", message);
 
@@ -243,6 +243,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
+  // hit the backend api endpoint hostedLink/resetPass/:token with new password in the body
   const resetPasswordToken = crypto
     .createHash("sha256")
     .update(token)
