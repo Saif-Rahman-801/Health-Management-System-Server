@@ -18,9 +18,13 @@ app.use(cookieParser());
 // routes import
 import userRouter from "./routes/user.routes.js";
 import adminRouter from "./routes/admin.routes.js"
+import doctorRouter from "./routes/doctor.routes.js"
+import patientRouter from "./routes/patient.routes.js"
 
 // routes declarations
 app.use("/api/v1/users", userRouter);
-app.use("/api/v2/dasboard", adminRouter);
+app.use("/api/v2/admin/dasboard", adminRouter);
+app.use("/api/v2/doctor/dasboard", doctorRouter);
+app.use("/api/v2/patient/dasboard", patientRouter);
 
 export { app };

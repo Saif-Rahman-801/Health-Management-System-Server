@@ -45,7 +45,7 @@ export const verifyJwt = asyncHandler(async (req, _, next) => {
   }
 });
 
-export const isUserAvailable = (req, _, next) => {
+/* export const isUserAvailable = (req, _, next) => {
   if (!req?.user) {
     throw new ApiError(401, "Unauthorized; user not available");
   }
@@ -57,4 +57,4 @@ export const isAdmin = (req, _, next) => {
     throw new ApiError(403, "Unauthorized; Bad request, role doesn't match");
   }
   next();
-};
+}; */

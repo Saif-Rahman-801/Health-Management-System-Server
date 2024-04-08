@@ -1,11 +1,10 @@
 import { Router } from "express";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { isAdminTrue } from "../controllers/admin.controllers.js";
 import { isUserAvailable } from "../middlewares/isUserAvailable.middleware.js";
-import { isAdmin } from "../middlewares/isAdmin.middleware.js";
+import { isDoctor } from "../middlewares/isDoctor.middleware.js";
 
 const router = Router();
 
-router.route("/admin").get(verifyJwt, isUserAvailable, isAdmin, isAdminTrue);
+router.route("/doctor").get(verifyJwt, isUserAvailable, isDoctor, isDoctorTrue);
 
 export default router;
