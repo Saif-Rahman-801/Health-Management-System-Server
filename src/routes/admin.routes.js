@@ -6,6 +6,6 @@ import { isAdmin } from "../middlewares/isAdmin.middleware.js";
 
 const router = Router();
 
-router.route("/admin").get(verifyJwt, isUserAvailable, isAdmin, isAdminTrue);
+router.route("/admin-info").get(verifyJwt, isUserAvailable, isAdmin, isAdminTrue);
 
 export default router;
