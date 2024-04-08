@@ -43,6 +43,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (existedUser) throw new ApiError(400, "User already exists");
 
+  // check if admin already exists
+  const adminExists = await User.exists({ role: "admin" });
+  
+  if (adminExists && role === "admin") {
+    throw new ApiError(400, "admin already exists");
+  }
+
   //   check if the profile picture file path exists
   const avatarLocalPath = req.files?.avatar[0]?.path;
   console.log(avatarLocalPath);
