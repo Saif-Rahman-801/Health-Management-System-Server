@@ -19,15 +19,51 @@ const isAdminTrue = asyncHandler(async (req, res) => {
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
     const users = await User.find({});
-    console.log(users);
+    if (!users) {
+      throw new ApiError(400, "error while fetching users");
+    }
+
     res
       .status(200)
-      .json(
-        new ApiResponse(200, { users }, "users fetched successfully")
-      );
+      .json(new ApiResponse(200, { users }, "users fetched successfully"));
   } catch (error) {
-    throw new ApiError(500, `server error while fetching users; ${error.message}`);
+    throw new ApiError(
+      500,
+      `server error while fetching users; ${error.message}`
+    );
   }
 });
 
-export { isAdminTrue, getAllUsers };
+const searchUser = asyncHandler(async (req, res) => {
+  const { username } = req?.query;
+  try {
+    if (!username) {
+      throw new ApiError(401, "Can't search without a name");
+    }
+
+    const users = await User.find({
+      username: new RegExp(username, "i"), // Performs a case-insensitive search
+    });
+
+    if (users.length === 0) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "No users found matching the criteria"));
+    }
+
+    console.log(users);
+
+    if (!users) {
+      throw new ApiError(400, "error while fetching users");
+    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, { data: users }, "users fetched successfully")
+      );
+  } catch (error) {
+    throw new ApiError(500, `${error.message}`);
+  }
+});
+
+export { isAdminTrue, getAllUsers, searchUser };
