@@ -51,7 +51,7 @@ const searchUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(400, {}, "No users found matching the criteria"));
     }
 
-    console.log(users);
+    // console.log(users);
 
     if (!users) {
       throw new ApiError(400, "error while fetching users");
@@ -66,4 +66,33 @@ const searchUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { isAdminTrue, getAllUsers, searchUser };
+const sortUser = asyncHandler(async (req, res) => {
+  const { role } = req?.query;
+  if (!role) {
+    throw new ApiError(500, "can't sort users without role");
+  }
+  try {
+    const users = await User.find({ role: role }).sort({ role: 1 });
+
+    if (!users) {
+      throw new ApiError(400, "error while fetching users");
+    }
+
+    if (users.length === 0) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "No users found matching the criteria"));
+    }
+
+    // console.log(users);
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, { data: users }, "users fetched successfully")
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { isAdminTrue, getAllUsers, searchUser, sortUser };
