@@ -114,4 +114,32 @@ const getAUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { isAdminTrue, getAllUsers, searchUser, sortUser, getAUser };
+
+const updateRole = asyncHandler(async (req, res) => {
+  const { id, role } = req.body;
+  if (!id || !role) {
+    throw new ApiError(401, "can't update user without user id and role");
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { role },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new ApiError(404, "User not found");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, updatedUser, "User role updated successfully")
+      );
+  } catch (error) {
+    throw new ApiError(400, `Error while updating role ${error.message}`);
+  }
+});
+
+export { isAdminTrue, getAllUsers, searchUser, sortUser, getAUser, updateRole };
