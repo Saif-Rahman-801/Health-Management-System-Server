@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { updateAccountStatus } from "../utils/updateAccountStatus.js";
 
 const isAdminTrue = asyncHandler(async (req, res) => {
   return res.status(200).json(
@@ -114,7 +115,6 @@ const getAUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 const updateRole = asyncHandler(async (req, res) => {
   const { id, role } = req.body;
   if (!id || !role) {
@@ -142,4 +142,41 @@ const updateRole = asyncHandler(async (req, res) => {
   }
 });
 
-export { isAdminTrue, getAllUsers, searchUser, sortUser, getAUser, updateRole };
+const deactivateAccount = asyncHandler(async (req, res) => {
+  const { id } = req?.body;
+  if (!id) {
+    throw new ApiError(400, "User ID is required");
+  }
+
+  await updateAccountStatus(
+    id,
+    false,
+    res,
+    "User account deactivated successfully"
+  );
+});
+
+const activateAccount = asyncHandler(async (req, res) => {
+  const { id } = req?.body;
+  if (!id) {
+    throw new ApiError(400, "User ID is required");
+  }
+
+  await updateAccountStatus(
+    id,
+    true,
+    res,
+    "User account activated successfully"
+  );
+});
+
+export {
+  isAdminTrue,
+  getAllUsers,
+  searchUser,
+  sortUser,
+  getAUser,
+  updateRole,
+  deactivateAccount,
+  activateAccount,
+};
