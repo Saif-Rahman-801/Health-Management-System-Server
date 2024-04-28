@@ -10,8 +10,10 @@
 
 1. **Clone the Repository:**
 
-   ```bash
-   git clone [[text](https://github.com/Saif-Rahman-801/Health-Management-System-Server.git)]
+```bash
+git clone [https://github.com/Saif-Rahman-801/Health-Management-System-Server.git](https://github.com/Saif-Rahman-801/Health-Management-System-Server.git)
+```bash
+
 
 
 
