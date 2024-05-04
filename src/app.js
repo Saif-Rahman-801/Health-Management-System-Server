@@ -24,7 +24,7 @@ import patientRouter from "./routes/patient.routes.js"
 // routes declarations
 app.use("/api/v1/users", userRouter);
 app.use("/api/v2/admin-dasboard", adminRouter);
-app.use("/api/v2/doctors-dasboard", doctorRouter);
-app.use("/api/v2/patients-dasboard", patientRouter);
+app.use("/api/v3/doctors-dasboard", doctorRouter);
+app.use("/api/v4/patients-dasboard", patientRouter);
 
 export { app };

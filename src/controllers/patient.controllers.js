@@ -14,4 +14,8 @@ const isPatientTrue = asyncHandler(async (req, res) => {
   );
 });
 
+const getAllDoctors = asyncHandler(async(req, res) => {
+  
+})
+
 export { isPatientTrue };
