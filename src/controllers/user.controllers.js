@@ -45,7 +45,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // check if admin already exists
   const adminExists = await User.exists({ role: "admin" });
-  
+
   if (adminExists && role === "admin") {
     throw new ApiError(400, "admin already exists");
   }

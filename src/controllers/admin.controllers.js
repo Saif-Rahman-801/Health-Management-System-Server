@@ -1,3 +1,4 @@
+import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -170,6 +171,31 @@ const activateAccount = asyncHandler(async (req, res) => {
   );
 });
 
+const verificationPendingDoctors = asyncHandler(async (req, res) => {
+  try {
+    const unverifiedDoctors = await Doctor.find({ verified: false });
+
+    if (!unverifiedDoctors) {
+      throw new ApiError(500, `Failed to fetch unverified doctors`);
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          unverifiedDoctors,
+          "Unverified doctors fetched successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(
+      500,
+      `Failed to fetch unverified doctors ${error.message}`
+    );
+  }
+});
+
 export {
   isAdminTrue,
   getAllUsers,
@@ -179,4 +205,5 @@ export {
   updateRole,
   deactivateAccount,
   activateAccount,
+  verificationPendingDoctors
 };

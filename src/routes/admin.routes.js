@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { activateAccount, deactivateAccount, getAUser, getAllUsers, isAdminTrue, searchUser, sortUser, updateRole } from "../controllers/admin.controllers.js";
+import { activateAccount, deactivateAccount, getAUser, getAllUsers, isAdminTrue, searchUser, sortUser, updateRole, verificationPendingDoctors } from "../controllers/admin.controllers.js";
 import { isUserAvailable } from "../middlewares/isUserAvailable.middleware.js";
 import { isAdmin } from "../middlewares/isAdmin.middleware.js";
 
@@ -21,5 +21,7 @@ router.route("/update-role").put(verifyJwt, isUserAvailable, isAdmin, updateRole
 router.route("/deactivate-account").put(verifyJwt, isUserAvailable, isAdmin, deactivateAccount);
 
 router.route("/activate-account").put(verifyJwt, isUserAvailable, isAdmin, activateAccount);
+
+router.route("/pending-doctors").get(verifyJwt, isUserAvailable, isAdmin, verificationPendingDoctors);
 
 export default router;

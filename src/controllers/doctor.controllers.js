@@ -68,14 +68,14 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
     });
 
     const verifiedDoctor = await Doctor.findById(doctor?._id);
-    console.log(verifiedDoctor);
+    // console.log(verifiedDoctor);
 
     if (!verifiedDoctor) throw new ApiError(500, "Error while creating user");
 
     return res
       .status(200)
       .json(
-        new ApiResponse(200, verifiedDoctor, "Doctor verification successful")
+        new ApiResponse(200, verifiedDoctor, "Doctor verification request sent")
       );
   } catch (error) {
     throw new ApiError(400, error.message);
