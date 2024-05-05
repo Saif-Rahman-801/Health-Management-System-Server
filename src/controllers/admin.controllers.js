@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -5,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { isNullOrEmpty } from "../utils/isNullOrEmpty.js";
 import { updateAccountStatus } from "../utils/updateAccountStatus.js";
+import { ObjectId } from "mongodb";
 
 const isAdminTrue = asyncHandler(async (req, res) => {
   return res.status(200).json(
@@ -205,6 +207,7 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       "-password -refreshToken"
     );
     // console.log(user);
+
     if (!user) {
       throw new ApiError(
         401,
@@ -219,6 +222,8 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
         "Forbidden; User is not available in our doctors list"
       );
     }
+
+    // console.log(doctor);
 
     if (
       isNullOrEmpty(doctor?.appointmentEmail) ||
@@ -245,15 +250,52 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       );
     }
 
+    /* const userWithDoctor = await User.aggregate([
+      // { $match: { _id: new ObjectId(registrationId)} },
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "_id",
+          foreignField: "registrationId",
+          as: "doctor",
+        },
+      },
+      {
+        $addFields: {
+          doctor: { $arrayElemAt: ["$doctor", 0] },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          doctor: { $ifNull: ["$doctor", {}] },
+        },
+      },
+    ]);
+    
+    if (!userWithDoctor || userWithDoctor.length === 0) {
+      throw new ApiError(
+        404,
+        "User not found or no doctor information available"
+      );
+    }
+    
+    console.log(userWithDoctor); */
+
     res
       .status(200)
       .json(
         new ApiResponse(200, verificationUpdatedDoctor, "Doctor's verified")
       );
   } catch (error) {
-    throw new ApiError(500, "Error while doctor's verification");
+    throw new ApiError(
+      500,
+      `Error while doctor's verification; ${error.message}`
+    );
   }
 });
+
+
 
 export {
   isAdminTrue,
