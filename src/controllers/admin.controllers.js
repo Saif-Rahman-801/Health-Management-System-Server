@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { isNullOrEmpty } from "../utils/isNullOrEmpty.js";
 import { updateAccountStatus } from "../utils/updateAccountStatus.js";
 
 const isAdminTrue = asyncHandler(async (req, res) => {
@@ -196,6 +197,64 @@ const verificationPendingDoctors = asyncHandler(async (req, res) => {
   }
 });
 
+// verify doctors here
+const confirmDocVerification = asyncHandler(async (req, res) => {
+  try {
+    const { registrationId } = req.body;
+    const user = await User.findOne({ _id: registrationId }).select(
+      "-password -refreshToken"
+    );
+    // console.log(user);
+    if (!user) {
+      throw new ApiError(
+        401,
+        "Unauthorized request; registration id doesn't match"
+      );
+    }
+
+    const doctor = await Doctor.findOne({ registrationId });
+    if (!doctor) {
+      throw new ApiError(
+        403,
+        "Forbidden; User is not available in our doctors list"
+      );
+    }
+
+    if (
+      isNullOrEmpty(doctor?.appointmentEmail) ||
+      doctor?.degrees.length === 0 ||
+      isNullOrEmpty(doctor?.collegeName) ||
+      isNullOrEmpty(doctor?.phoneNumber)
+    ) {
+      throw new ApiError(
+        500,
+        "Error while doctor's verification; all the require fields aren't fulfilled"
+      );
+    }
+
+    const verificationUpdatedDoctor = await Doctor.findOneAndUpdate(
+      { registrationId },
+      { $set: { verified: true } },
+      { new: true }
+    );
+
+    if (!verificationUpdatedDoctor) {
+      throw new ApiError(
+        500,
+        "Internal server error while updating verification"
+      );
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, verificationUpdatedDoctor, "Doctor's verified")
+      );
+  } catch (error) {
+    throw new ApiError(500, "Error while doctor's verification");
+  }
+});
+
 export {
   isAdminTrue,
   getAllUsers,
@@ -205,5 +264,6 @@ export {
   updateRole,
   deactivateAccount,
   activateAccount,
-  verificationPendingDoctors
+  verificationPendingDoctors,
+  confirmDocVerification,
 };
