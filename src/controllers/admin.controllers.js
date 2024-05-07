@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -5,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { isNullOrEmpty } from "../utils/isNullOrEmpty.js";
 import { updateAccountStatus } from "../utils/updateAccountStatus.js";
+import { ObjectId } from "mongodb";
 
 const isAdminTrue = asyncHandler(async (req, res) => {
   return res.status(200).json(
@@ -261,6 +263,13 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       );
     }
 
+    if (doctor?.appointmentEmail !== user?.email) {
+      throw new ApiError(
+        500,
+        "Appointment email and registration email must match"
+      );
+    }
+
     const verificationUpdatedDoctor = await Doctor.findOneAndUpdate(
       { registrationId },
       { $set: { verified: true } },
@@ -274,10 +283,48 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       );
     }
 
+    
+
+  const docsAllInfo = await User.aggregate([
+    {
+      $match: { _id: new ObjectId(`${registrationId}`) } // Filter users with role "doctor" (optional)
+    },
+    {
+      $lookup: {
+        from: "doctors",
+        localField: "email",
+        foreignField: "appointmentEmail",
+        as: "doctorInfo"
+      }
+    },
+    {
+      $unwind: "$doctorInfo" // Unwind doctorInfo array for users with multiple matches
+    },
+    {
+      $match: { "doctorInfo.verified": true } // Filter doctors with verified status (optional)
+    },
+    {
+      $project: {
+        password: 0,
+        refreshToken: 0
+      }
+    }
+    
+  ])
+
+
+
+  console.log(docsAllInfo);
+
+  if (!docsAllInfo) {
+    throw new ApiError(500, "docs info needed")
+  }
+
+
     res
       .status(200)
       .json(
-        new ApiResponse(200, verificationUpdatedDoctor, "Doctor's verified")
+        new ApiResponse(200, docsAllInfo, "Doctor's verified")
       );
   } catch (error) {
     throw new ApiError(
