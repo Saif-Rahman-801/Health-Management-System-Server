@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -6,7 +5,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { isNullOrEmpty } from "../utils/isNullOrEmpty.js";
 import { updateAccountStatus } from "../utils/updateAccountStatus.js";
-import { ObjectId } from "mongodb";
 
 const isAdminTrue = asyncHandler(async (req, res) => {
   return res.status(200).json(
@@ -46,9 +44,23 @@ const searchUser = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Can't search without a name");
     }
 
-    const users = await User.find({
-      username: new RegExp(username, "i"), // Performs a case-insensitive search
-    });
+    // const users = await User.find({
+    //   username: new RegExp(username, "i"), // Performs a case-insensitive search
+    // });
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          username: new RegExp(username, "i"),
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          refreshToken: 0,
+        },
+      },
+    ]);
 
     if (users.length === 0) {
       return res
@@ -77,7 +89,20 @@ const sortUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "can't sort users without role");
   }
   try {
-    const users = await User.find({ role: role }).sort({ role: 1 });
+    // const users = await User.find({ role: role }).sort({ role: 1 });
+    const users = await User.aggregate([
+      {
+        $match: {
+          role: `${role}`,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          refreshToken: 0,
+        },
+      },
+    ]);
 
     if (!users) {
       throw new ApiError(400, "error while fetching users");
@@ -199,7 +224,6 @@ const verificationPendingDoctors = asyncHandler(async (req, res) => {
   }
 });
 
-// verify doctors here
 const confirmDocVerification = asyncHandler(async (req, res) => {
   try {
     const { registrationId } = req.body;
@@ -250,38 +274,6 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       );
     }
 
-    /* const userWithDoctor = await User.aggregate([
-      // { $match: { _id: new ObjectId(registrationId)} },
-      {
-        $lookup: {
-          from: "doctors",
-          localField: "_id",
-          foreignField: "registrationId",
-          as: "doctor",
-        },
-      },
-      {
-        $addFields: {
-          doctor: { $arrayElemAt: ["$doctor", 0] },
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          doctor: { $ifNull: ["$doctor", {}] },
-        },
-      },
-    ]);
-    
-    if (!userWithDoctor || userWithDoctor.length === 0) {
-      throw new ApiError(
-        404,
-        "User not found or no doctor information available"
-      );
-    }
-    
-    console.log(userWithDoctor); */
-
     res
       .status(200)
       .json(
@@ -294,8 +286,6 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
     );
   }
 });
-
-
 
 export {
   isAdminTrue,
