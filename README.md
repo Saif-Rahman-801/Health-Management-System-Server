@@ -429,5 +429,83 @@ Activates the account
 
 
 
+#### Verification Pending Doctors
+
+```http
+GET /api/admin/pending-doctors
+```
+
+Retrieves a list of unverified doctors pending for verification.
+
+**Response:**
+
+```json
+{
+  "status": 200,
+  "data": {
+    // List of unverified doctor objects
+  },
+  "message": "Unverified doctors fetched successfully"
+}
+```
+
+#### Confirm Doctor Verification
+
+```http
+PUT /api/admin/verify-doctor
+```
+
+Verifies a doctor based on their registration ID and provided details.
+
+**Request Body:**
+
+- `registrationId`: Doctor's registration ID.
+
+**Response:**
+
+```json
+{
+  "status": 200,
+  "data": {
+    // Doctor object with updated verification status
+  },
+  "message": "Doctor verified successfully"
+}
+```
+
+### Doctors APIs
+
+#### Verify As Doctor
+
+```http
+POST /api/verifyAs-doctor
+```
+
+Allows a user with a doctor role to submit verification details.
+
+**Request Body:**
+
+- `registrationId`: Doctor's registration ID.
+- `degrees`: Array of degrees.
+- `collegeName`: Name of the college.
+- `appointmentEmail`: Doctor's appointment email.
+- `phoneNumber`: Doctor's phone number.
+
+**Response:**
+
+```json
+{
+  "status": 200,
+  "data": {
+    // Verified doctor object
+  },
+  "message": "Doctor verification request sent"
+}
+```
+
+
+
+
+
 
 

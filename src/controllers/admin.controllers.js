@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -312,9 +311,7 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
     
   ])
 
-
-
-  console.log(docsAllInfo);
+  // console.log(docsAllInfo);
 
   if (!docsAllInfo) {
     throw new ApiError(500, "docs info needed")
