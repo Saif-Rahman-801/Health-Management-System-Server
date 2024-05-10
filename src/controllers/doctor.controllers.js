@@ -19,6 +19,7 @@ const isDoctorTrue = asyncHandler(async (req, res) => {
 
 const verifyAsDoctor = asyncHandler(async (req, res) => {
   const {
+    username,
     registrationId,
     degrees,
     collegeName,
@@ -27,6 +28,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
   } = req.body;
 
   const requiredFields = [
+    { field: username, message: "Please provide your username" },
     { field: registrationId, message: "Please provide your registration Id" },
     { field: degrees, message: "Please provide your degrees" },
     { field: collegeName, message: "Please provide your college name" },
@@ -60,6 +62,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
 
   try {
     const doctor = await Doctor.create({
+      username,
       registrationId,
       degrees,
       collegeName,

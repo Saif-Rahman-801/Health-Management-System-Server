@@ -15,7 +15,7 @@ const appointmentSchema = new Schema({
 const doctorSchema = new Schema(
   {
     // Basic Information
-    name: {
+    username: {
       type: String,
       required: true,
     },

@@ -1,3 +1,4 @@
+import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -34,16 +35,17 @@ const searchDoctors = asyncHandler(async (req, res) => {
           from: "doctors",
           localField: "email",
           foreignField: "appointmentEmail",
-          as: "OtherInfo",
+          as: "DoctorInfo",
         },
       },
       {
-        $unwind: "$OtherInfo",
+        $unwind: "$DoctorInfo",
       },
       {
         $project: {
           password: 0,
           refreshToken: 0,
+          upcomingAppointments: 0,
         },
       },
     ]);
@@ -69,13 +71,13 @@ const searchDoctors = asyncHandler(async (req, res) => {
 });
 
 const sortDoctorByExperienceAndDegrees = asyncHandler(async (req, res) => {
-  const { role } = req?.query;
-  if (!role) {
-    throw new ApiError(500, "can't sort users without role");
+  const { experience, degree } = req?.query;
+  if (!experience && !degree) {
+    throw new ApiError(500, "can't sort doctors without experience or degree");
   }
   try {
     // const users = await User.find({ role: role }).sort({ role: 1 });
-    const users = await User.aggregate([
+    const users = await Doctor.aggregate([
       {
         $match: {
           role: `${role}`,
