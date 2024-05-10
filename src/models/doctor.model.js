@@ -15,6 +15,10 @@ const appointmentSchema = new Schema({
 const doctorSchema = new Schema(
   {
     // Basic Information
+    name: {
+      type: String,
+      required: true,
+    },
     registrationId: {
       type: String,
       required: true,
@@ -45,8 +49,8 @@ const doctorSchema = new Schema(
     },
     // Additional fields
     phoneNumber: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     address: {
       street: String,
@@ -56,6 +60,7 @@ const doctorSchema = new Schema(
     },
     // Upcoming Appointments
     upcomingAppointments: [appointmentSchema],
+    recentAppointments: [appointmentSchema],
   },
   {
     timestamps: true,

@@ -277,6 +277,28 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, {}, "Password reset successful"));
 });
 
+
+
+
+const getAUser = asyncHandler(async (req, res) => {
+  const { id } = req?.query;
+  if (!id) {
+    throw new ApiError(500, "User unavaible; id doesn't match");
+  }
+
+  try {
+    const user = await User.findById(id, "-password -refreshToken");
+    if (!user) {
+      throw new ApiError(401, "user is not availbale");
+    }
+    res
+      .status(200)
+      .json(new ApiResponse(200, { data: user }, "user fetched successfully"));
+  } catch (error) {
+    throw new ApiError(500, error?.message);
+  }
+});
+
 export {
   registerUser,
   loginUser,
