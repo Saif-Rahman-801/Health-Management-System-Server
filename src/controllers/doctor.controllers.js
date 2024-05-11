@@ -25,6 +25,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
     collegeName,
     appointmentEmail,
     phoneNumber,
+    experience,
   } = req.body;
 
   const requiredFields = [
@@ -37,6 +38,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
       message: "Please provide your appointment email",
     },
     { field: phoneNumber, message: "Please provide your phone number" },
+    { field: experience, message: "Please provide your experience information if it's 0 years give 0" },
   ];
 
   requiredFields.forEach(({ field, message }) => {
@@ -60,6 +62,10 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized: User does not have a doctor role");
   }
 
+  if (doctorExists.email !== appointmentEmail) {
+    throw new ApiError(500, "Your appointment email should match your registration email");
+  }
+
   try {
     const doctor = await Doctor.create({
       username,
@@ -68,6 +74,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
       collegeName,
       appointmentEmail,
       phoneNumber,
+      experience
     });
 
     const verifiedDoctor = await Doctor.findById(doctor?._id);

@@ -1,5 +1,6 @@
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -56,7 +57,6 @@ const searchDoctors = asyncHandler(async (req, res) => {
         .json(new ApiResponse(400, {}, "No users found matching the criteria"));
     }
 
-
     if (!users) {
       throw new ApiError(400, "error while fetching users");
     }
@@ -77,25 +77,41 @@ const sortDoctorByExperienceAndDegrees = asyncHandler(async (req, res) => {
   }
   try {
     // const users = await User.find({ role: role }).sort({ role: 1 });
-    const users = await Doctor.aggregate([
+    const doctors = await Doctor.aggregate([
       {
         $match: {
-          role: `${role}`,
-        },
+          experience: {$gte: parseInt(experience)},
+          degrees: degree,
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "appointmentEmail",
+          foreignField: "email",
+          as: "profile"
+        }
+      },
+      {
+        $addFields: {
+          profile: {
+           $arrayElemAt: ["$profile", 0]
+          }
+        }
       },
       {
         $project: {
-          password: 0,
-          refreshToken: 0,
-        },
-      },
+          "profile.password": 0,
+          "profile.refreshToken": 0
+        }
+      }
     ]);
 
-    if (!users) {
+    if (!doctors) {
       throw new ApiError(400, "error while fetching users");
     }
 
-    if (users.length === 0) {
+    if (doctors.length === 0) {
       return res
         .status(400)
         .json(new ApiResponse(400, {}, "No users found matching the criteria"));
@@ -105,11 +121,56 @@ const sortDoctorByExperienceAndDegrees = asyncHandler(async (req, res) => {
     res
       .status(200)
       .json(
-        new ApiResponse(200, { data: users }, "users fetched successfully")
+        new ApiResponse(200, { data: doctors }, "users fetched successfully")
       );
   } catch (error) {
     throw new ApiError(500, error.message);
   }
 });
 
-export { isPatientTrue, searchDoctors };
+const getAllDoctors = asyncHandler(async (req, res) => {
+  try {
+    const doctors = await User.aggregate([
+      {
+        $match: {
+          role: "doctor",
+        },
+      },
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "email",
+          foreignField: "appointmentEmail",
+          as: "docInfo",
+        },
+      },
+      {
+        $unwind: "$docInfo",
+      },
+      {
+        $match: {
+          "docInfo.verified": true,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          refreshToken: 0,
+          "docInfo.upcomingAppointments": 0,
+        },
+      },
+    ]);
+
+    if (!doctors) {
+      throw new ApiError(500, "Fetching doctors failed");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, doctors, "Doctors fetched Successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { isPatientTrue, searchDoctors, getAllDoctors, sortDoctorByExperienceAndDegrees };
