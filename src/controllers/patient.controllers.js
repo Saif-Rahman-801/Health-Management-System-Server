@@ -1,3 +1,4 @@
+import { Appointment } from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -80,31 +81,31 @@ const sortDoctorByExperienceAndDegrees = asyncHandler(async (req, res) => {
     const doctors = await Doctor.aggregate([
       {
         $match: {
-          experience: {$gte: parseInt(experience)},
+          experience: { $gte: parseInt(experience) },
           degrees: degree,
-        }
+        },
       },
       {
         $lookup: {
           from: "users",
           localField: "appointmentEmail",
           foreignField: "email",
-          as: "profile"
-        }
+          as: "profile",
+        },
       },
       {
         $addFields: {
           profile: {
-           $arrayElemAt: ["$profile", 0]
-          }
-        }
+            $arrayElemAt: ["$profile", 0],
+          },
+        },
       },
       {
         $project: {
           "profile.password": 0,
-          "profile.refreshToken": 0
-        }
-      }
+          "profile.refreshToken": 0,
+        },
+      },
     ]);
 
     if (!doctors) {
@@ -173,4 +174,87 @@ const getAllDoctors = asyncHandler(async (req, res) => {
   }
 });
 
-export { isPatientTrue, searchDoctors, getAllDoctors, sortDoctorByExperienceAndDegrees };
+const requestAppointment = asyncHandler(async (req, res) => {
+  try {
+    const {
+      appointmentDate,
+      appointmentTime,
+      doctorRegistrationId,
+      doctorAppointmentEmail,
+    } = req?.body;
+
+    
+    if (
+      !appointmentDate ||
+      !doctorRegistrationId ||
+      !doctorAppointmentEmail ||
+      !appointmentTime
+    ) {
+      throw new ApiError(
+        500,
+        "Cannot schedule appointment without date/time, doctor's registration ID, and doctor's appointment email"
+      );
+    }
+
+   /*  if (!appointmentDate) {
+      throw new ApiError(500, "Cannot schedule appointment without date");
+    }
+    if (!appointmentTime) {
+      throw new ApiError(500, "Cannot schedule appointment without time");
+    }
+    if (!doctorRegistrationId) {
+      throw new ApiError(
+        500,
+        "Cannot schedule appointment without doctors Registration Id"
+      );
+    }
+    if (!doctorAppointmentEmail) {
+      throw new ApiError(
+        500,
+        "Cannot schedule appointment without doctor Appointment Email"
+      );
+    } */
+
+
+    const user = req?.user;
+
+
+    const createAppointment = await Appointment.create({
+      patientId: user ? user._id : null,
+      patientName: user ? user.username : null,
+      patientEmail: user ? user.email : null,
+      doctorRegistrationId,
+      doctorAppointmentEmail,
+      appointmentDate,
+      appointmentTime,
+    });
+
+    const requestedAppointment = await Appointment.findById(
+      createAppointment?._id
+    );
+
+    if (!requestedAppointment) {
+      throw new ApiError(500, "Error while creating appointment Request");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          requestedAppointment,
+          "Appointment request sent successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export {
+  isPatientTrue,
+  searchDoctors,
+  getAllDoctors,
+  sortDoctorByExperienceAndDegrees,
+  requestAppointment,
+};
