@@ -183,7 +183,6 @@ const requestAppointment = asyncHandler(async (req, res) => {
       doctorAppointmentEmail,
     } = req?.body;
 
-    
     if (
       !appointmentDate ||
       !doctorRegistrationId ||
@@ -196,7 +195,7 @@ const requestAppointment = asyncHandler(async (req, res) => {
       );
     }
 
-   /*  if (!appointmentDate) {
+    /*  if (!appointmentDate) {
       throw new ApiError(500, "Cannot schedule appointment without date");
     }
     if (!appointmentTime) {
@@ -215,10 +214,9 @@ const requestAppointment = asyncHandler(async (req, res) => {
       );
     } */
 
-
     const user = req?.user;
 
-
+    // prevent sending appointment request twice in the same time
     const createAppointment = await Appointment.create({
       patientId: user ? user._id : null,
       patientName: user ? user.username : null,

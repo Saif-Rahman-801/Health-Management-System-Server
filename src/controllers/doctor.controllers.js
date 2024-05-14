@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+import { Appointment } from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -38,7 +40,11 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
       message: "Please provide your appointment email",
     },
     { field: phoneNumber, message: "Please provide your phone number" },
-    { field: experience, message: "Please provide your experience information if it's 0 years give 0" },
+    {
+      field: experience,
+      message:
+        "Please provide your experience information if it's 0 years give 0",
+    },
   ];
 
   requiredFields.forEach(({ field, message }) => {
@@ -63,7 +69,10 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
   }
 
   if (doctorExists.email !== appointmentEmail) {
-    throw new ApiError(500, "Your appointment email should match your registration email");
+    throw new ApiError(
+      500,
+      "Your appointment email should match your registration email"
+    );
   }
 
   try {
@@ -74,7 +83,7 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
       collegeName,
       appointmentEmail,
       phoneNumber,
-      experience
+      experience,
     });
 
     const verifiedDoctor = await Doctor.findById(doctor?._id);
@@ -92,4 +101,41 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
   }
 });
 
-export { isDoctorTrue, verifyAsDoctor };
+const requestedAppointments = asyncHandler(async (req, res) => {
+  try {
+    
+    const doctorRegistrationId = req?.user?._id;
+
+    const requestedAppointments = await Appointment.aggregate([
+      {
+        $match: {
+          doctorRegistrationId: new mongoose.Types.ObjectId(doctorRegistrationId),
+        },
+      },
+      {
+        $match: {
+          accepeted: false,
+        },
+      },
+    ]);
+
+    if (!requestedAppointments) {
+      throw new ApiError(500, "Error while fetching requestedAppointments");
+    }
+    // create a pending(pending: false) field in the appointment schema
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          requestedAppointments,
+          "appointment requests fetched successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { isDoctorTrue, verifyAsDoctor, requestedAppointments };

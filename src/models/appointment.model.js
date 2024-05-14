@@ -28,6 +28,10 @@ const appointmentSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    pending: {
+      type: Boolean,
+      default: false,
+    },
     appointmentDate: {
       type: Date,
       required: true,

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { model } from "mongoose";
 
-const appointmentSchema = new Schema({
+/* const appointmentSchema = new Schema({
   clientName: {
     type: String,
     required: true,
@@ -10,7 +10,7 @@ const appointmentSchema = new Schema({
     type: Date,
     required: true,
   },
-});
+}); */
 
 const doctorSchema = new Schema(
   {
@@ -24,7 +24,8 @@ const doctorSchema = new Schema(
       required: true,
     },
     registrationId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
       unique: true,
     },
@@ -62,9 +63,9 @@ const doctorSchema = new Schema(
       state: String,
       zip: String,
     },
-    // Upcoming Appointments
+    /* // Upcoming Appointments
     upcomingAppointments: [appointmentSchema],
-    recentAppointments: [appointmentSchema],
+    recentAppointments: [appointmentSchema], */
   },
   {
     timestamps: true,
