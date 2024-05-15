@@ -103,24 +103,25 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
 
 const requestedAppointments = asyncHandler(async (req, res) => {
   try {
-    
     const doctorRegistrationId = req?.user?._id;
 
     const requestedAppointments = await Appointment.aggregate([
       {
         $match: {
-          doctorRegistrationId: new mongoose.Types.ObjectId(doctorRegistrationId),
+          doctorRegistrationId: new mongoose.Types.ObjectId(
+            doctorRegistrationId
+          ),
         },
       },
       {
         $match: {
-          accepeted: false,
+          accepted: false,
         },
       },
     ]);
 
     if (!requestedAppointments) {
-      throw new ApiError(500, "Error while fetching requestedAppointments");
+      throw new ApiError(500, "Error while fetching requested   Appointments");
     }
     // create a pending(pending: false) field in the appointment schema
 
@@ -138,4 +139,48 @@ const requestedAppointments = asyncHandler(async (req, res) => {
   }
 });
 
-export { isDoctorTrue, verifyAsDoctor, requestedAppointments };
+const acceptAppointment = asyncHandler(async (req, res) => {
+  try {
+    const appoitmentId = req?.query?.appoitmentId;
+
+    if (!appoitmentId) {
+      throw new ApiError(500, "appoitment id missing");
+    }
+
+    const isAlreadyAccepted = await Appointment.findById({ _id: appoitmentId });
+
+    if (isAlreadyAccepted?.accepted) {
+      throw new ApiError(500, "Appointment has already been accepted");
+    }
+
+    const acceptAppointment = await Appointment.findOneAndUpdate(
+      { _id: appoitmentId },
+      { $set: { accepted: true } },
+      { new: true }
+    );
+
+    if (!acceptAppointment) {
+      throw new ApiError(500, "Error while accepting appointment");
+    }
+
+    // console.log(acceptAppointment);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, acceptAppointment, "Appointment accepted"));
+  } catch (error) {
+    throw new ApiError(200, error.message);
+  }
+});
+
+const cancelAppointment = asyncHandler(async (req, res) => {});
+
+// do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
+
+export {
+  isDoctorTrue,
+  verifyAsDoctor,
+  requestedAppointments,
+  acceptAppointment,
+  cancelAppointment,
+};

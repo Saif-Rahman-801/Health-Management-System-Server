@@ -24,11 +24,11 @@ const appointmentSchema = new Schema(
       type: String,
       required: true,
     },
-    accepeted: {
+    accepted: {
       type: Boolean,
       default: false,
     },
-    pending: {
+    appoitmentDone: {
       type: Boolean,
       default: false,
     },
