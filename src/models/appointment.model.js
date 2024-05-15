@@ -40,6 +40,11 @@ const appointmentSchema = new Schema(
       type: String,
       required: true,
     },
+    canceled: {
+      type: Boolean,
+      default: false,
+      required: true,
+    }
   },
   { timestamps: true }
 );

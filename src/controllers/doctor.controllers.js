@@ -30,6 +30,14 @@ const verifyAsDoctor = asyncHandler(async (req, res) => {
     experience,
   } = req.body;
 
+  const isVerificationRequestAlreadyExists = await Doctor.findOne({
+    registrationId,
+  });
+
+  if (!isVerificationRequestAlreadyExists) {
+    throw new ApiError(500, "Verification request already sent");
+  }
+
   const requiredFields = [
     { field: username, message: "Please provide your username" },
     { field: registrationId, message: "Please provide your registration Id" },
@@ -123,7 +131,6 @@ const requestedAppointments = asyncHandler(async (req, res) => {
     if (!requestedAppointments) {
       throw new ApiError(500, "Error while fetching requested   Appointments");
     }
-    // create a pending(pending: false) field in the appointment schema
 
     res
       .status(200)
@@ -163,8 +170,6 @@ const acceptAppointment = asyncHandler(async (req, res) => {
       throw new ApiError(500, "Error while accepting appointment");
     }
 
-    // console.log(acceptAppointment);
-
     res
       .status(200)
       .json(new ApiResponse(200, acceptAppointment, "Appointment accepted"));
@@ -173,7 +178,37 @@ const acceptAppointment = asyncHandler(async (req, res) => {
   }
 });
 
-const cancelAppointment = asyncHandler(async (req, res) => {});
+const cancelAppointment = asyncHandler(async (req, res) => {
+  try {
+    const appoitmentId = req?.query?.appoitmentId;
+
+    if (!appoitmentId) {
+      throw new ApiError(500, "appoitment id missing");
+    }
+
+    const isAlreadyCanceled = await Appointment.findById({ _id: appoitmentId });
+
+    if (isAlreadyCanceled?.canceled) {
+      throw new ApiError(500, "Appointment has already been canceled");
+    }
+
+    const cancelAppointment = await Appointment.findOneAndUpdate(
+      { _id: appoitmentId },
+      { $set: { accepted: false, canceled: true } },
+      { new: true }
+    );
+
+    if (!cancelAppointment) {
+      throw new ApiError(500, "Error while accepting appointment");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, cancelAppointment, "Appointment canceled"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
 
 // do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 import { isUserAvailable } from "../middlewares/isUserAvailable.middleware.js";
 import { isDoctor } from "../middlewares/isDoctor.middleware.js";
-import { acceptAppointment, isDoctorTrue, requestedAppointments, verifyAsDoctor } from "../controllers/doctor.controllers.js";
+import { acceptAppointment, cancelAppointment, isDoctorTrue, requestedAppointments, verifyAsDoctor } from "../controllers/doctor.controllers.js";
 
 const router = Router();
 
@@ -12,6 +12,8 @@ router.route("/verifyAs-doctor").post(verifyJwt, isUserAvailable, isDoctor, veri
 
 router.route("/appointment-requests").get(verifyJwt, isUserAvailable, isDoctor, requestedAppointments);
 
-router.route("/accept-appointment").put(verifyJwt, isUserAvailable, isDoctor, acceptAppointment);
+router.route("/accept-appointment").put(verifyJwt, isUserAvailable, isDoctor, acceptAppointment); 
+
+router.route("/cancel-appointment").put(verifyJwt, isUserAvailable, isDoctor, cancelAppointment);
 
 export default router;

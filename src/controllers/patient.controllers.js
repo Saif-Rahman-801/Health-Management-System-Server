@@ -216,7 +216,7 @@ const requestAppointment = asyncHandler(async (req, res) => {
 
     const user = req?.user;
 
-    // prevent sending appointment request twice in the same time
+    // prevent sending appointment request twice in the same time if nessecery
     const createAppointment = await Appointment.create({
       patientId: user ? user._id : null,
       patientName: user ? user.username : null,

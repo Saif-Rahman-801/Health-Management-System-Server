@@ -331,6 +331,8 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
   }
 });
 
+const canceledAppointments = asyncHandler(async(req, res) => {})
+
 export {
   isAdminTrue,
   getAllUsers,
