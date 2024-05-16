@@ -359,6 +359,12 @@ const canceledAppointments = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteCanceledAppointments = asyncHandler(async(req, res) => {
+  
+})
+
+// do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
+
 export {
   isAdminTrue,
   getAllUsers,

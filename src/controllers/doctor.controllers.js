@@ -162,7 +162,7 @@ const acceptAppointment = asyncHandler(async (req, res) => {
 
     const acceptAppointment = await Appointment.findOneAndUpdate(
       { _id: appoitmentId },
-      { $set: { accepted: true } },
+      { $set: { accepted: true, canceled: false } },
       { new: true }
     );
 
@@ -210,7 +210,31 @@ const cancelAppointment = asyncHandler(async (req, res) => {
   }
 });
 
-// do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
+const getYourCanceledAppointments = asyncHandler(async (req, res) => {
+  try {
+    const doctorRegistrationId = req?.user?._id;
+
+    const canceledAppointments = await Appointment.find({
+      $and: [{ doctorRegistrationId }, { canceled: true }, { accepted: false }],
+    });
+
+    if (!canceledAppointments) {
+      throw new ApiError(500, "Don't have any canceled appointments");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          500,
+          canceledAppointments,
+          "Canceled appoitments fetched successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
 
 export {
   isDoctorTrue,
@@ -218,4 +242,5 @@ export {
   requestedAppointments,
   acceptAppointment,
   cancelAppointment,
+  getYourCanceledAppointments
 };
