@@ -1,3 +1,4 @@
+import { Appointment } from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -282,47 +283,41 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
       );
     }
 
-    
+    const docsAllInfo = await User.aggregate([
+      {
+        $match: { _id: new ObjectId(`${registrationId}`) }, // Filter users with role "doctor" (optional)
+      },
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "email",
+          foreignField: "appointmentEmail",
+          as: "doctorInfo",
+        },
+      },
+      {
+        $unwind: "$doctorInfo", // Unwind doctorInfo array for users with multiple matches
+      },
+      {
+        $match: { "doctorInfo.verified": true }, // Filter doctors with verified status (optional)
+      },
+      {
+        $project: {
+          password: 0,
+          refreshToken: 0,
+        },
+      },
+    ]);
 
-  const docsAllInfo = await User.aggregate([
-    {
-      $match: { _id: new ObjectId(`${registrationId}`) } // Filter users with role "doctor" (optional)
-    },
-    {
-      $lookup: {
-        from: "doctors",
-        localField: "email",
-        foreignField: "appointmentEmail",
-        as: "doctorInfo"
-      }
-    },
-    {
-      $unwind: "$doctorInfo" // Unwind doctorInfo array for users with multiple matches
-    },
-    {
-      $match: { "doctorInfo.verified": true } // Filter doctors with verified status (optional)
-    },
-    {
-      $project: {
-        password: 0,
-        refreshToken: 0
-      }
+    // console.log(docsAllInfo);
+
+    if (!docsAllInfo) {
+      throw new ApiError(500, "docs info needed");
     }
-    
-  ])
-
-  // console.log(docsAllInfo);
-
-  if (!docsAllInfo) {
-    throw new ApiError(500, "docs info needed")
-  }
-
 
     res
       .status(200)
-      .json(
-        new ApiResponse(200, docsAllInfo, "Doctor's verified")
-      );
+      .json(new ApiResponse(200, docsAllInfo, "Doctor's verified"));
   } catch (error) {
     throw new ApiError(
       500,
@@ -331,7 +326,38 @@ const confirmDocVerification = asyncHandler(async (req, res) => {
   }
 });
 
-const canceledAppointments = asyncHandler(async(req, res) => {})
+const canceledAppointments = asyncHandler(async (req, res) => {
+  try {
+    const canceledAppointments = await Appointment.find({
+      $and: [{ canceled: true }, { accepted: false }],
+    });
+
+    /* const canceledAppointments = await Appointment.aggregate([
+      {
+        $match: {
+          canceled: true,
+          accepted: false,
+        },
+      },
+    ]); */
+
+    if (!canceledAppointments) {
+      throw new ApiError(500, "No canceled appoitments available");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          canceledAppointments,
+          "All the canceled appoitments fetched successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
 
 export {
   isAdminTrue,
@@ -344,4 +370,5 @@ export {
   activateAccount,
   verificationPendingDoctors,
   confirmDocVerification,
+  canceledAppointments,
 };
