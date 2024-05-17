@@ -365,11 +365,42 @@ const deleteCanceledAppointments = asyncHandler(async (req, res) => {
     const deletedAppointmentInfo = await Appointment.findByIdAndDelete({ _id });
 
     if (!deletedAppointmentInfo) {
-      throw new ApiError(500, "Error, deleting appointment info")
+      throw new ApiError(
+        500,
+        "Error, deleting appointment info, Appointment isn't canceled"
+      );
     }
 
-    res.status(200).json(new ApiResponse(200, deletedAppointmentInfo, "Appointment info deleted"))
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, deletedAppointmentInfo, "Appointment info deleted")
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
 
+const deleteAllCanceledAppointments = asyncHandler(async (req, res) => {
+  try {
+    const allDeletedAppointments = await Appointment.deleteMany({
+      canceled: true,
+      accepted: false,
+    });
+
+    if (!allDeletedAppointments) {
+      throw new ApiError(500, "No canceled appointments available to delete");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          allDeletedAppointments,
+          "Successfully deleted all canceled appointments"
+        )
+      );
   } catch (error) {
     throw new ApiError(500, error.message);
   }
@@ -389,5 +420,6 @@ export {
   verificationPendingDoctors,
   confirmDocVerification,
   canceledAppointments,
-  deleteCanceledAppointments
+  deleteCanceledAppointments,
+  deleteAllCanceledAppointments
 };
