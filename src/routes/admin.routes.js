@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { activateAccount, canceledAppointments, confirmDocVerification, deactivateAccount, deleteAllCanceledAppointments, deleteCanceledAppointments, getAUser, getAllUsers, isAdminTrue, searchUser, sortUser, updateRole, verificationPendingDoctors } from "../controllers/admin.controllers.js";
+import { activateAccount, canceledAppointments, confirmDocVerification, deactivateAccount, deleteAllCanceledAppointments, deleteCanceledAppointments, getAUser, getAllUsers, isAdminTrue, searchUser, sortUser, totalPendingAppointments, updateRole, verificationPendingDoctors } from "../controllers/admin.controllers.js";
 import { isUserAvailable } from "../middlewares/isUserAvailable.middleware.js";
 import { isAdmin } from "../middlewares/isAdmin.middleware.js";
 
@@ -31,5 +31,7 @@ router.route("/cancled-appoitments").get(verifyJwt, isUserAvailable, isAdmin, ca
 router.route("/delete-appoitment").delete(verifyJwt, isUserAvailable, isAdmin, deleteCanceledAppointments);
 
 router.route("/delete-appoitments").delete(verifyJwt, isUserAvailable, isAdmin, deleteAllCanceledAppointments);
+
+router.route("/pending-appoitments").get(verifyJwt, isUserAvailable, isAdmin, totalPendingAppointments);
 
 export default router;

@@ -408,6 +408,37 @@ const deleteAllCanceledAppointments = asyncHandler(async (req, res) => {
 
 // do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
 
+const totalPendingAppointments = asyncHandler(async (req, res) => {
+  try {
+    const pendingAppointments = await Appointment.aggregate([
+      {
+        $match: {
+          accepted: true,
+        },
+      },
+      {
+        $count: "TotalPendingAppointments",
+      },
+    ]);
+
+    if (!pendingAppointments) {
+      throw new ApiError(500, "No pending appointments available");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          pendingAppointments,
+          "Pending appoitments count fetched successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
 export {
   isAdminTrue,
   getAllUsers,
@@ -421,5 +452,6 @@ export {
   confirmDocVerification,
   canceledAppointments,
   deleteCanceledAppointments,
-  deleteAllCanceledAppointments
+  deleteAllCanceledAppointments,
+  totalPendingAppointments,
 };
