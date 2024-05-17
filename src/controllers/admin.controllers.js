@@ -359,9 +359,21 @@ const canceledAppointments = asyncHandler(async (req, res) => {
   }
 });
 
-const deleteCanceledAppointments = asyncHandler(async(req, res) => {
-  
-})
+const deleteCanceledAppointments = asyncHandler(async (req, res) => {
+  try {
+    const _id = req?.query?.appointment_id;
+    const deletedAppointmentInfo = await Appointment.findByIdAndDelete({ _id });
+
+    if (!deletedAppointmentInfo) {
+      throw new ApiError(500, "Error, deleting appointment info")
+    }
+
+    res.status(200).json(new ApiResponse(200, deletedAppointmentInfo, "Appointment info deleted"))
+
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
 
 // do grouping and count pending appointments and accepted or not accepted appointments, count requested appoinments
 
@@ -377,4 +389,5 @@ export {
   verificationPendingDoctors,
   confirmDocVerification,
   canceledAppointments,
+  deleteCanceledAppointments
 };
