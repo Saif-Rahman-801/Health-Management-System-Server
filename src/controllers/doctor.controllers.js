@@ -176,7 +176,7 @@ const acceptAppointment = asyncHandler(async (req, res) => {
   } catch (error) {
     throw new ApiError(200, error.message);
   }
-});
+}); // send response to the patient dashboard the appointment is accepted
 
 const cancelAppointment = asyncHandler(async (req, res) => {
   try {
@@ -236,11 +236,46 @@ const getYourCanceledAppointments = asyncHandler(async (req, res) => {
   }
 });
 
+const undoAppointmentCanceletion = asyncHandler(async (req, res) => {
+  try {
+    const _id = req?.query?.appointmentId;
+
+    const isAlreadyAccepted = await Appointment.findById(_id);
+
+    if (!isAlreadyAccepted?.canceled && isAlreadyAccepted?.accepted) {
+      throw new ApiError(409, "Appointment already accepted")
+    }
+
+    const acceptedAppointment = await Appointment.findByIdAndUpdate(
+      _id,
+      { accepted: true, canceled: false },
+      { new: true }
+    );
+
+    if (!acceptedAppointment) {
+      throw new ApiError(404, "Appointment not found");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          acceptedAppointment,
+          "appointment canceletion undone successfully and appointment is accepted"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
 export {
   isDoctorTrue,
   verifyAsDoctor,
   requestedAppointments,
   acceptAppointment,
   cancelAppointment,
-  getYourCanceledAppointments
+  getYourCanceledAppointments,
+  undoAppointmentCanceletion,
 };
